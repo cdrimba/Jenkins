@@ -1,0 +1,27 @@
+#!/bin/bash
+
+##check if version.php is readable
+if [ -r version.php ];
+then
+
+        #tmp is assigned the 2nd line from version.php eg: $_GLOBALS['build_version'] = '1.0.1'
+        tmp=`tail -1 version.php | awk -F'.' '{$3=$3+1;print}' OFS='.' | sed -e "s/$/\'/"`
+
+        #concatenate "<?php> and the modified version.php
+        echo "<?php" > version.php
+        echo "$tmp" >> version.php
+
+        #buildversion will hold the current version eg: 1.0.1
+        export buildVersion=`tail -1 version.php | cut -d "=" -f 2 | cut -d "'" -f 2`
+	
+	#check if $buildVersion is in accepted format: nnn.nnn.nnn eg: 1.12.11 2.222.222 OK | 1.dsaasda.2 NOK
+        if ! [[ $buildVersion =~ ^[0-9]*\.[0-9]*\.[0-9]*$ ]];
+        then
+                echo "Unaccepted version format"
+		exit 2;
+	fi
+        #echo "Current version is $buildVersion"
+else
+        echo "version.php not found or not readable"
+        exit 1;
+fi
